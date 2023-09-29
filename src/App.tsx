@@ -1,25 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-
+import React, { useState, useEffect, useReducer } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  ProductList,
+  Navbar,
+  ProductDetail,
+  Login,
+  Register,
+  Cart,
+} from "./components";
+import {
+  initialAuthState,
+  authStateReducer,
+} from "./context/authentication/Reducer";
+import { AuthContext } from "./context/authentication/AuthContext";
 function App() {
+  const [state, dispatch] = useReducer(authStateReducer, initialAuthState);
+  const [isLogin, setLogin] = useState(false);
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      setLogin(true);
+    }
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthContext.Provider value={{ state, dispatch }}>
+      <Router>
+        <Navbar isLogin={isLogin} />
+        <Routes>
+          {!state.isAuthenticated && (
+            <>
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<Register />} />
+            </>
+          )}
+
+          <Route path='/' element={<ProductList />} />
+          <Route path='/cart' element={<Cart />} />
+          <Route path='/product/:productId' element={<ProductDetail />} />
+        </Routes>
+      </Router>
+    </AuthContext.Provider>
   );
 }
 
